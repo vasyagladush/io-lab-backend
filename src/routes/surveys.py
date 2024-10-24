@@ -23,10 +23,11 @@ from services.auth import (
 router = APIRouter()
 
 
-@router.post("/login", status_code=200, response_model=UserLoginResponseSchema)
-async def login(
+@router.post("/", status_code=200, response_model=UserLoginResponseSchema)
+async def create(
     db_session: DBSessionDep,
-    user_credentials: UserLoginCredentialsSchema = Body(...),
+    auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep],
+    user_credentials: UserLoginCredentialsSchema = Body(...)
 ):
     existing_user: User | None = await UserService.get_user_by_username(
         db_session, user_credentials.username

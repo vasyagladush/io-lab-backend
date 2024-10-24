@@ -31,7 +31,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     lifespan=lifespan,
-    title="WiFi Controller",
     docs_url=None if app_config.ENVIRONMENT == "production" else "/docs",
 )
 app.openapi = custom_openapi(app)
