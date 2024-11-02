@@ -24,3 +24,9 @@ async def add_grade(
         await db_session.refresh(new_grade)
 
     return new_grade
+
+async def get_grade_for_survey(db_session: AsyncSession, user_id: int, survey_id: int) -> Grade | None:
+    return (
+        await db_session.scalars(select(Grade).where(Grade.user_id == user_id and Grade.survey_id == survey_id))
+    ).first()
+
