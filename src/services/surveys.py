@@ -4,17 +4,17 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.surveys import Surveys
-from schemas.surveys import UserSignUpSchema
+from models.surveys import Survey
+from schemas.surveys import SurveySchema
 
 
 async def create_survey(
     db_session: AsyncSession,
-    survey_data: UserSignUpSchema, #TODO
-    commit_and_refresh: bool = True,
-) -> Surveys:
+    survey_data: SurveySchema,
+    commit_and_refresh: bool = True
+) -> Survey:
 
-    new_survey = Surveys()
+    new_survey = Survey()
     new_survey.title = survey_data.title
     new_survey.body = survey_data.body
     new_survey.start_at = survey_data.start_at
@@ -27,3 +27,8 @@ async def create_survey(
         await db_session.refresh(new_survey)
 
     return new_survey
+
+async def get_survey(db_session: AsyncSession, id: int) -> Survey | None:
+    return (
+        await db_session.scalars(select(Survey).where(Survey.id == id))
+    ).first()
