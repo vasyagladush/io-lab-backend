@@ -1,3 +1,6 @@
+import datetime
+
+from sqlalchemy import func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from . import Base
@@ -11,5 +14,4 @@ class Grade(Base):
     grade: Mapped[int]
     survey_id: Mapped[int]
     user_id: Mapped[int]
-
-
+    created_at: Mapped[datetime.datetime] = mapped_column(default=func.now())
