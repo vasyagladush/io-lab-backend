@@ -32,6 +32,7 @@ router = APIRouter()
 @router.post("/", status_code=201)
 async def create_survey(
     db_session: DBSessionDep,
+    auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep],
     body: SurveySchema = Body(...),
 ) -> Survey:
 
