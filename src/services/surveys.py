@@ -32,3 +32,7 @@ async def get_survey(db_session: AsyncSession, id: int) -> Survey | None:
     return (
         await db_session.scalars(select(Survey).where(Survey.id == id))
     ).first()
+
+
+async def get_all_survey(db_session: AsyncSession) -> Survey | None:
+    return (await db_session.scalars(select(Survey))).all()

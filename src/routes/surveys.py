@@ -39,7 +39,14 @@ async def create_survey(
     new_survey = await SurveyService.create_survey(db_session, body)
     return new_survey
 
+@router.get("/", status_code=201)
+async def get_all_surveys(
+    db_session: DBSessionDep,
+    auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep]
+) -> list:
 
+    survey_list = await SurveyService.get_all_survey(db_session)
+    return survey_list
 
 
 def cleanup_temp_report_directory(path: str):
