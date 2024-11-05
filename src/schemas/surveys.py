@@ -1,11 +1,12 @@
 from schemas import BaseSchema
 from pydantic import BaseModel, ConfigDict
+from datetime import datetime
 
 class SurveySchema(BaseSchema):
     title: str
     body: str
-    starts_at: str
-    finishes_At: bool
+    starts_at: datetime
+    finishes_at: datetime
 
     model_config = ConfigDict(
         from_attributes=True,
@@ -16,3 +17,9 @@ class SurveySchema(BaseSchema):
             }
         },
     )
+
+class SurveyPlusSchema(BaseSchema):
+    title: str
+    body: str
+    starts_at: datetime
+    finishes_at: datetime

@@ -16,7 +16,7 @@ import services.grades as GradeService
 import services.surveys as SurveyService
 from config import DBSessionDep, hash_helper
 from models.surveys import Survey
-from schemas.surveys import SurveySchema
+from schemas.surveys import SurveySchema, SurveyPlusSchema
 
 from services.auth import (
     AdminAccessCheckDep,
@@ -33,6 +33,7 @@ router = APIRouter()
 async def create_survey(
     db_session: DBSessionDep,
     auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep],
+    response_model=SurveyPlusSchema,
     body: SurveySchema = Body(...),
 ) -> Survey:
 
