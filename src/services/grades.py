@@ -29,7 +29,7 @@ async def add_grade(
 
 async def get_grade_for_survey(
     db_session: AsyncSession, user_id: int, survey_id: int
-) -> Grade | None:
+) -> Grade:
     return (
         await db_session.scalars(
             select(Grade).where(
