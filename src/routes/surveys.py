@@ -2,13 +2,14 @@ import io
 import os
 import shutil
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Annotated, Sequence
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from fastapi import APIRouter, BackgroundTasks, Body, HTTPException
 from fastapi.responses import FileResponse
+from matplotlib.dates import date2num
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 
@@ -16,8 +17,7 @@ import services.grades as GradeService
 import services.surveys as SurveyService
 from config import DBSessionDep, hash_helper
 from models.surveys import Survey
-from schemas.surveys import SurveySchema, SurveyPlusSchema
-
+from schemas.surveys import SurveyPlusSchema, SurveySchema
 from services.auth import (
     AdminAccessCheckDep,
     AuthJWTTokenPayload,
@@ -28,8 +28,7 @@ from services.auth import (
 router = APIRouter()
 
 
-
-@router.post("/", status_code=201)
+@router.post("/", status_code=201, response_model=SurveyPlusSchema)
 async def create_survey(
     db_session: DBSessionDep,
     auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep],
@@ -40,14 +39,36 @@ async def create_survey(
     new_survey = await SurveyService.create_survey(db_session, body)
     return new_survey
 
-@router.get("/", status_code=201)
+
+@router.get("/", status_code=201, response_model=Sequence[SurveyPlusSchema])
 async def get_all_surveys(
     db_session: DBSessionDep,
-    auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep]
+    auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep],
 ) -> list:
 
     survey_list = await SurveyService.get_all_survey(db_session)
     return survey_list
+
+
+@router.get(
+    "/current", status_code=200, response_model=Sequence[SurveyPlusSchema]
+)
+async def get_current_surveys(
+    db_session: DBSessionDep,
+    auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep],
+) -> list:
+    # Pobierz wszystkie ankiety, ustawiając pustą listę jako domyślną wartość
+    all_surveys = await SurveyService.get_all_survey(db_session) or []
+
+    # Filtruj ankiety, które są aktualnie otwarte
+    now = datetime.now()
+    current_surveys = [
+        survey
+        for survey in all_surveys
+        if survey.start_at <= now <= survey.finishes_at
+    ]
+
+    return current_surveys
 
 
 def cleanup_temp_report_directory(path: str):
@@ -57,7 +78,6 @@ def cleanup_temp_report_directory(path: str):
 @router.get(
     "/{id}/report",
     status_code=200,
-    # response_model=UserPlusSchema,
     responses={401: {}},
 )
 async def get_report(
@@ -93,12 +113,12 @@ async def get_report(
 
     # Calculate total time span and 5% intervals
     total_duration = closes_at - started_at
-    interval_duration = (
-        total_duration / 20
-    )  # Each bin represents 5% of the total time
+    interval_duration = timedelta(seconds=total_duration.total_seconds() / 20)
+    # Each bin represents 5% of the total time
 
     # Create time bins (20 bins, each 5% of total time)
     time_bins = [started_at + i * interval_duration for i in range(21)]
+    time_bins_numeric = date2num(time_bins)
 
     # Extract vote timestamps for histogram calculation
     grade_times = [entry.created_at for entry in grades_data]
@@ -126,7 +146,7 @@ async def get_report(
     # Display each bin's start time on the x-axis
     bin_labels = [bin_start.strftime("%H:%M") for bin_start in time_bins]
     plt.xticks(
-        time_bins, bin_labels, rotation=45, ha="right", fontsize=8
+        time_bins_numeric, bin_labels, rotation=45, ha="right", fontsize=8
     )  # type:ignore
 
     # Save the histogram image to the temporary folder
@@ -174,5 +194,3 @@ async def get_report(
     return FileResponse(
         pdf_path, media_type="application/pdf", filename="report.pdf"
     )
-
-

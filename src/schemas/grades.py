@@ -1,5 +1,7 @@
-from schemas import BaseSchema
 from pydantic import BaseModel, ConfigDict
+
+from schemas import BaseSchema
+
 
 class GradeSchema(BaseSchema):
     grade: int
@@ -9,10 +11,6 @@ class GradeSchema(BaseSchema):
     model_config = ConfigDict(
         from_attributes=True,
         json_schema_extra={
-            "example": {
-                "grade": 1,
-                "survey_id": 1,
-                "user_id": 1
-            }
+            "example": {"grade": 1, "survey_id": 1, "user_id": 1}
         },
     )

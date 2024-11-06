@@ -73,8 +73,16 @@ async def create_user(
     return new_user
 
 
-@router.get("/current", status_code=200, response_model=UserPlusSchema, responses={401: {}})
-async def get_current_user(auth_token_body: Annotated[AuthJWTTokenPayload, AuthJWTTokenValidatorDep], db_session: DBSessionDep,):
+@router.get(
+    "/current",
+    status_code=200,
+    response_model=UserPlusSchema,
+    responses={401: {}},
+)
+async def get_current_user(
+    auth_token_body: Annotated[AuthJWTTokenPayload, AuthJWTTokenValidatorDep],
+    db_session: DBSessionDep,
+):
     user: User | None = await UserService.get_user(
         db_session, auth_token_body["user_id"]
     )
