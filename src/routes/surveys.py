@@ -40,7 +40,18 @@ async def create_survey(
     return new_survey
 
 
-@router.get("/", status_code=201, response_model=Sequence[SurveyPlusSchema])
+@router.get("/{id}", status_code=200, response_model=SurveyPlusSchema)
+async def get_survey(
+    db_session: DBSessionDep,
+    id,
+    auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep],
+) -> list:
+
+    survey = await SurveyService.get_survey(db_session, id)
+    return survey
+
+
+@router.get("/", status_code=200, response_model=Sequence[SurveyPlusSchema])
 async def get_all_surveys(
     db_session: DBSessionDep,
     auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep],
@@ -55,7 +66,7 @@ async def get_all_surveys(
 )
 async def get_current_surveys(
     db_session: DBSessionDep,
-    auth_token_body: Annotated[AuthJWTTokenPayload, AdminAccessCheckDep],
+    auth_token_body: Annotated[AuthJWTTokenPayload, AuthJWTTokenValidatorDep],
 ) -> list:
     # Pobierz wszystkie ankiety, ustawiając pustą listę jako domyślną wartość
     all_surveys = await SurveyService.get_all_survey(db_session) or []
