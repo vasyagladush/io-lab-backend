@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi_responses import custom_openapi
 
 from config import app_config, session_manager
+from routes.grades import router as GradesRouter
 from routes.surveys import router as SurveysRouter
 from routes.users import router as UsersRouter
 
@@ -53,4 +54,5 @@ async def read_root():
 
 app.include_router(UsersRouter, tags=["Users"], prefix="/users")
 app.include_router(SurveysRouter, tags=["Surveys"], prefix="/surveys")
+app.include_router(GradesRouter, tags=["Grades"], prefix="/grades")
 # app.include_router(DebugRouter, tags=["Debug"], prefix="/debug")

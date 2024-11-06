@@ -10,13 +10,14 @@ from schemas.grades import GradeSchema
 async def add_grade(
     db_session: AsyncSession,
     grade_data: GradeSchema,
+    user_id: int,
     commit_and_refresh: bool = True,
 ) -> Grade:
 
     new_grade = Grade()
     new_grade.grade = grade_data.grade
     new_grade.survey_id = grade_data.survey_id
-    new_grade.user_id = grade_data.user_id
+    new_grade.user_id = user_id
 
     db_session.add(new_grade)
 
@@ -33,7 +34,7 @@ async def get_grade_for_survey(
     return (
         await db_session.scalars(
             select(Grade).where(
-                Grade.user_id == user_id and Grade.survey_id == survey_id
+                (Grade.user_id == user_id) & (Grade.survey_id == survey_id)
             )
         )
     ).first()

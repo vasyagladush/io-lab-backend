@@ -21,7 +21,9 @@ async def create_grade(
     db_session: DBSessionDep,
     auth_token_body: Annotated[AuthJWTTokenPayload, AuthJWTTokenValidatorDep],
     body: GradeSchema = Body(...),
-) -> Survey:
+):
 
-    new_grade = await GradeService.create_survey(db_session, body)
+    new_grade = await GradeService.add_grade(
+        db_session, body, auth_token_body["user_id"]
+    )
     return new_grade

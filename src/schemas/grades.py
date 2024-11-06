@@ -6,7 +6,6 @@ from schemas import BaseSchema
 class GradeSchema(BaseSchema):
     grade: int
     survey_id: int
-    user_id: int
 
     model_config = ConfigDict(
         from_attributes=True,

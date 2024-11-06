@@ -44,10 +44,10 @@ async def create_survey(
     "/current",
     status_code=200,
     response_model=Sequence[SurveyPlusSchema],
-    dependencies=[AuthJWTTokenValidatorDep],
 )
 async def get_current_surveys(
     db_session: DBSessionDep,
+    auth_token_body: Annotated[AuthJWTTokenPayload, AuthJWTTokenValidatorDep],
 ):
     # Pobierz wszystkie ankiety, ustawiając pustą listę jako domyślną wartość
     all_surveys = await SurveyService.get_all_survey(db_session) or []
@@ -57,7 +57,14 @@ async def get_current_surveys(
     current_surveys = [
         survey
         for survey in all_surveys
-        if survey.start_at <= now <= survey.finishes_at
+        if (
+            (survey.start_at <= now <= survey.finishes_at)
+            and not (
+                await GradeService.get_grade_for_survey(
+                    db_session, auth_token_body["user_id"], survey.id
+                )
+            )
+        )
     ]
 
     return current_surveys
