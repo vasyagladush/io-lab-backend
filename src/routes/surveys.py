@@ -40,6 +40,29 @@ async def create_survey(
     return new_survey
 
 
+@router.get(
+    "/current",
+    status_code=200,
+    response_model=Sequence[SurveyPlusSchema],
+    dependencies=[AuthJWTTokenValidatorDep],
+)
+async def get_current_surveys(
+    db_session: DBSessionDep,
+):
+    # Pobierz wszystkie ankiety, ustawiając pustą listę jako domyślną wartość
+    all_surveys = await SurveyService.get_all_survey(db_session) or []
+
+    # Filtruj ankiety, które są aktualnie otwarte
+    now = datetime.now()
+    current_surveys = [
+        survey
+        for survey in all_surveys
+        if survey.start_at <= now <= survey.finishes_at
+    ]
+
+    return current_surveys
+
+
 @router.get("/{id}", status_code=200, response_model=SurveyPlusSchema)
 async def get_survey(
     db_session: DBSessionDep,
@@ -59,27 +82,6 @@ async def get_all_surveys(
 
     survey_list = await SurveyService.get_all_survey(db_session)
     return survey_list
-
-
-@router.get(
-    "/current", status_code=200, response_model=Sequence[SurveyPlusSchema]
-)
-async def get_current_surveys(
-    db_session: DBSessionDep,
-    auth_token_body: Annotated[AuthJWTTokenPayload, AuthJWTTokenValidatorDep],
-) -> list:
-    # Pobierz wszystkie ankiety, ustawiając pustą listę jako domyślną wartość
-    all_surveys = await SurveyService.get_all_survey(db_session) or []
-
-    # Filtruj ankiety, które są aktualnie otwarte
-    now = datetime.now()
-    current_surveys = [
-        survey
-        for survey in all_surveys
-        if survey.start_at <= now <= survey.finishes_at
-    ]
-
-    return current_surveys
 
 
 def cleanup_temp_report_directory(path: str):
